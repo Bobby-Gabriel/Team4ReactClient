@@ -1,18 +1,14 @@
-FROM node:14.1-alpine AS build-env
-WORKDIR /app
-COPY . .
-RUN npm install 
+FROM node:13.12.0-alpine
 
-ENV PATH="./node_modules/.bin:$PATH"
+WORKDIR /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install --silent
+RUN npm install react-scripts@3.4.1 -g --silent
 
 COPY . ./
-RUN npm run build
 
-FROM nginx:1.17-alpine
-RUN apk update && apk add ca-certificates nginx && rm -rf /var/cache/apk/*
-RUN mkdir /run/nginx && touch /run/nginx/nginx.pid
-WORKDIR /app
-COPY --from=build-env /app/build /app
-COPY ./default.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]
